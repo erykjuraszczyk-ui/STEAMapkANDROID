@@ -7,7 +7,7 @@ Fanowski panel dla Androida 13+, który ułatwia uruchomienie oficjalnego Steam 
 ## Stan projektu — v0.1.0
 
 - Natywna aplikacja Android napisana w Javie.
-- Android 13+ (minSdk 33), compileSdk / targetSdk 37.
+- Android 13+ (minSdk 33), compileSdk / targetSdk 36.
 - Wykrywanie oficjalnej aplikacji Steam Link.
 - Uruchamianie Steam Link, jeśli jest zainstalowany; w przeciwnym razie otwarcie strony aplikacji w Google Play.
 - Wbudowana instrukcja konfiguracji Steam Remote Play.
@@ -29,7 +29,7 @@ Fanowski panel dla Androida 13+, który ułatwia uruchomienie oficjalnego Steam 
 Wymagania projektu:
 
 - JDK 17
-- Android SDK Platform 37
+- Android SDK Platform 36
 - Android Build Tools 36.0.0
 - Android Gradle Plugin 9.5.0
 - Gradle 9.6.0
