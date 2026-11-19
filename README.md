@@ -1,81 +1,97 @@
 # Steam Android Hub
 
-Fanowski panel do uruchamiania oficjalnego Steam Link na Androidzie 13+.
+Fanowski panel dla Androida 13+, który ułatwia uruchomienie oficjalnego Steam Link i połączenie z komputerem z uruchomionym Steam.
 
-> **Ważne:** ta aplikacja nie uruchamia binarnych gier Windows bezpośrednio na telefonie i nie zawiera własnego kodeka streamingu. Gra działa na komputerze z uruchomionym Steam, a obraz i sterowanie przesyła oficjalny klient Steam Link. Ten projekt jest niezależny i nie jest powiązany z Valve.
+> **Ważne ograniczenie techniczne:** aplikacja nie instaluje plików EXE ani nie uruchamia gier Windows natywnie na Androidzie. Gra jest instalowana i uruchamiana na komputerze. Obraz, dźwięk i sterowanie przesyła oficjalny Steam Link przez Steam Remote Play. Projekt jest niezależny i nie jest powiązany z Valve.
 
-## Aktualny zakres — v0.1.0
+## Stan projektu — v0.1.0
 
-- Natywna aplikacja Android (Java + Android SDK).
-- Minimalna wersja Androida: 13 / API 33.
-- Target SDK: 36.
-- Sprawdzenie, czy Steam Link jest zainstalowany.
-- Przycisk uruchomienia Steam Link; gdy aplikacji brakuje, przejście do jej strony w Google Play.
-- Krótka instrukcja przygotowania komputera i połączenia telefonu.
-- Brak logowania, telemetrii, reklam i zbierania danych.
-- GitHub Actions buduje APK debug po pushu / ręcznym uruchomieniu workflow.
+- Natywna aplikacja Android napisana w Javie.
+- Android 13+ (minSdk 33), compileSdk / targetSdk 37.
+- Wykrywanie oficjalnej aplikacji Steam Link.
+- Uruchamianie Steam Link, jeśli jest zainstalowany; w przeciwnym razie otwarcie strony aplikacji w Google Play.
+- Wbudowana instrukcja konfiguracji Steam Remote Play.
+- Brak logowania Steam, telemetrii, reklam, własnego backendu i zbędnych uprawnień.
+- GitHub Actions buduje debug APK po zmianie kodu i udostępnia go jako artifact.
 
 ## Jak używać
 
-1. Na komputerze zainstaluj i uruchom Steam oraz zaloguj się.
-2. W Steam na komputerze włącz **Ustawienia → Remote Play → Włącz Remote Play**.
-3. Telefon i komputer połącz z tą samą siecią Wi-Fi. Do pierwszej konfiguracji zalecana jest sieć 5 GHz; komputer najlepiej podłączyć Ethernetem.
-4. Zainstaluj Steam Link z Google Play.
-5. Uruchom **Steam Android Hub**, wybierz **Uruchom Steam Link**, a następnie sparuj telefon z komputerem zgodnie z instrukcjami Steam Link.
-6. Po sparowaniu wybierz bibliotekę i grę w Steam Link. Komputer musi pozostać włączony.
+1. Na komputerze zainstaluj i uruchom Steam, a następnie zaloguj się.
+2. W Steam na komputerze otwórz **Ustawienia → Remote Play** i włącz tę funkcję.
+3. Podłącz komputer i telefon do tej samej sieci lokalnej. Zalecane jest Wi-Fi 5 GHz; komputer najlepiej podłączyć do routera Ethernetem.
+4. Zainstaluj oficjalną aplikację Steam Link z [Google Play](https://play.google.com/store/apps/details?id=com.valvesoftware.steamlink).
+5. Otwórz Steam Android Hub i naciśnij **Uruchom / zainstaluj Steam Link**.
+6. W Steam Link wybierz komputer i zakończ parowanie zgodnie z instrukcjami aplikacji.
+7. Wybierz grę w Steam Link. Komputer musi być włączony, a gra działa na komputerze.
 
 ## Budowanie APK
 
-Wymagania:
+Wymagania projektu:
+
 - JDK 17
-- Android SDK z platformą Android 36 i Build Tools 35.0.0
-- Gradle 8.11.1 (albo wrapper z repozytorium)
+- Android SDK Platform 37
+- Android Build Tools 36.0.0
+- Android Gradle Plugin 9.5.0
+- Gradle 9.6.0
 
-W Android Studio otwórz katalog repozytorium i uruchom **Build → Build Bundle(s) / APK(s) → Build APK(s)**.
-
-Z terminala:
+W Android Studio otwórz katalog repozytorium jako projekt Gradle. Z terminala, po zainstalowaniu Gradle 9.6.0 i Android SDK, uruchom:
 
 ```bash
-./gradlew assembleDebug
+gradle --no-daemon assembleDebug
 ```
 
 Wynik:
+
 `app/build/outputs/apk/debug/app-debug.apk`
+
+Repozytorium nie zawiera jeszcze Gradle Wrappera, dlatego lokalne budowanie wymaga zainstalowanego Gradle 9.6.0. Automatyczny workflow GitHub Actions konfiguruje odpowiednią wersję samodzielnie.
 
 ## Automatyczny build
 
-GitHub Actions: zakładka **Actions → Android debug APK**. Workflow można uruchomić ręcznie przez **Run workflow**. Gotowy plik APK będzie dostępny jako artifact `steam-android-hub-debug`.
+Po pushu do gałęzi `main` GitHub Actions uruchamia workflow **Android debug APK**. Można go też uruchomić ręcznie w zakładce **Actions**.
+
+Gotowy plik znajduje się w artifact:
+
+`steam-android-hub-debug`
+
+APK debug nie jest podpisanym wydaniem produkcyjnym. Do dystrybucji poza testami należy przygotować bezpieczny klucz podpisujący i osobny build release.
 
 ## Architektura
 
 ```
 Steam Android Hub (Android 13+)
-  ├─ sprawdzenie instalacji Steam Link
-  ├─ instrukcja parowania i konfiguracji PC
-  └─ Android Intent → oficjalna aplikacja Steam Link
-                              ├─ połączenie z komputerem
-                              ├─ streaming obrazu i dźwięku
-                              └─ przesyłanie sterowania
-                                      ↓
-                                Steam na PC → gra
+  ├─ sprawdza obecność Steam Link
+  ├─ wyświetla instrukcję konfiguracji
+  └─ uruchamia oficjalny Steam Link przez Android Intent
+                                  │
+                                  ▼
+                         Steam Remote Play
+                                  │
+                  obraz / dźwięk / sterowanie
+                                  │
+                                  ▼
+                       Steam działający na PC
+                                  │
+                                  ▼
+                              Gra PC
 ```
 
-Aplikacja otwiera Steam Link, ale nie próbuje sterować jego prywatnymi ekranami ani nie korzysta z nieudokumentowanych API Valve.
+Aplikacja nie próbuje sterować prywatnymi ekranami Steam Link i nie korzysta z nieudokumentowanych API Valve.
 
 ## Prywatność i bezpieczeństwo
 
-- Brak uprawnień do mikrofonu, kamery, lokalizacji i plików.
-- Brak własnego serwera i brak wysyłania danych do backendu.
-- Aplikacja sprawdza wyłącznie, czy pakiet Steam Link jest dostępny na urządzeniu.
-- Połączenie ze streamingiem i parowanie są obsługiwane przez Steam Link.
+- Aplikacja nie prosi o login ani hasło Steam.
+- Nie deklaruje dostępu do mikrofonu, kamery, lokalizacji ani plików.
+- Nie wysyła danych do własnego serwera.
+- Sprawdza wyłącznie dostępność pakietu Steam Link i uruchamia oficjalną aplikację.
+- Parowanie, transmisja i obsługa kontrolera pozostają po stronie Steam Link.
 
 ## Licencje i znaki towarowe
 
-Kod tego repozytorium jest udostępniony na licencji MIT (plik `LICENSE`). Steam i Steam Link są znakami towarowymi Valve Corporation. Nazwy użyto wyłącznie w celu opisania kompatybilności. Nie używamy oficjalnego logo ani nie sugerujemy, że aplikacja jest produktem Valve.
+Kod tego repozytorium jest udostępniony na licencji MIT (plik `LICENSE`). Steam i Steam Link są znakami towarowymi Valve Corporation. Nazwy wykorzystano wyłącznie w celu opisania kompatybilności. Projekt nie używa oficjalnego logo i nie sugeruje, że jest produktem Valve.
 
 ## Plan rozwoju
 
-- **v0.1.0:** panel Android, wykrywanie Steam Link, uruchamianie klienta i instrukcja.
-- **v0.2.0:** lista zapisanych komputerów, test dostępności hosta w sieci lokalnej i konfiguracja wygodnych skrótów.
-- **v0.3.0:** analiza możliwości integracji niezależnego klienta streamingowego (np. Sunshine/Moonlight) z poszanowaniem jego licencji i autorstwa.
-
+- **v0.1.0:** panel Android, wykrywanie i uruchamianie Steam Link, instrukcja oraz automatyczny build APK.
+- **v0.2.0:** lista zapisanych komputerów i test dostępności hosta w sieci lokalnej.
+- **v0.3.0:** ocena możliwości integracji niezależnego klienta streamingowego (np. Sunshine/Moonlight), z poszanowaniem licencji i autorstwa tych projektów.
